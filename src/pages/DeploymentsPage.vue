@@ -51,5 +51,6 @@ export default {
 
     return { data, model, options, getNamespaces, getDeployByNs }
   }
+
 }
 </script>
