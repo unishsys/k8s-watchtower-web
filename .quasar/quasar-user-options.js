@@ -15,9 +15,9 @@ import iconSet from 'quasar/icon-set/material-icons'
 
 
 
-import {Notify} from 'quasar'
+import {Notify,Dialog} from 'quasar'
 
 
 
-export default { config: {"dark":"auto"},iconSet,plugins: {Notify} }
+export default { config: {"dark":"auto"},iconSet,plugins: {Notify,Dialog} }
 

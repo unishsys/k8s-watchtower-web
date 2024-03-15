@@ -5,7 +5,7 @@
         <q-select v-model="model" :options="options" @update:model-value="getDeployByNs" label="Select Namespace" />
       </div>
       <div class="q-pa-md col">
-        <q-table :rows="data" row-key="name" flat bordered />
+        <q-table :rows="data" row-key="name" flat bordered clickable title="Deployments" @row-click="getTable" />
       </div>
     </div>
   </q-page>
@@ -36,20 +36,61 @@ export default {
           .then((response) => {
             data.value = response.data.data
           })
-          .catch(() => {
+          .catch((error) => {
             $q.notify({
-              color: 'negative',
-              position: 'top',
-              message: 'Loading failed',
+              color: 'error',
+              position: 'top-right',
+              message: error.message,
               icon: 'report_problem'
             })
           })
       }
     }
 
+    function getTable(_, row) {
+      console.log("after table: ", row.Name)
+      $q.dialog({
+        title: 'Update Replicas',
+        message: 'Deployment: ' + row.Name,
+        prompt: {
+          model: '',
+          isValid: val => val != row.Replicas, // << here is the magic
+          type: 'number'
+        },
+        cancel: true,
+        persistent: true
+      }).onOk(scaleStr => {
+        console.log('>>>> OK, received', scaleStr)
+        const scale = parseInt(scaleStr, 10)
+        api.post(`/api/v1/deploy/`, {
+          "namespace": model.value,
+          "name": row.Name,
+          "replicas": scale
+        })
+          .then((response) => {
+            let d = response.data
+            $q.notify({
+              color: d.status,
+              position: 'top-right',
+              message: d.msg,
+              icon: 'done'
+            })
+          })
+          .catch((error) => {
+            console.log(error)
+            $q.notify({
+              color: 'error',
+              position: 'top-right',
+              message: error.message,
+              icon: 'report_problem'
+            })
+          })
+      })
+    }
+
     onMounted(getNamespaces)
 
-    return { data, model, options, getNamespaces, getDeployByNs }
+    return { data, model, options, getNamespaces, getDeployByNs, getTable }
   }
 
 }
