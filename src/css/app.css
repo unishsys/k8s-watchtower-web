@@ -1,1 +1,16 @@
 /* app global css */
+.text-sucess {
+  color: #31db50 !important;
+}
+
+.bg-sucess {
+  background: #31db50 !important;
+}
+
+.text-error {
+  color: #db4831 !important;
+}
+
+.bg-error {
+  background: #db4831 !important;
+}
