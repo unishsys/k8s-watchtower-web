@@ -8,6 +8,10 @@ const routes = [
         path: "/configmaps",
         component: () => import("pages/ConfigmapsPage.vue"),
       },
+      {
+        path: "/test",
+        component: () => import("pages/DepTest.vue"),
+      },
     ],
   },
 

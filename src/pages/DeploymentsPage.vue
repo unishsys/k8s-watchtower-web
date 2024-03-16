@@ -7,6 +7,7 @@
       <div class="q-pa-md col">
         <q-table :rows="data" row-key="name" flat bordered clickable title="Deployments" @row-click="getTable" />
       </div>
+
     </div>
   </q-page>
 </template>
@@ -24,7 +25,7 @@ export default {
     const options = ref([])
 
     function getNamespaces() {
-      api.get("/api/v1/get-namespaces")
+      api.get(`/api/v1/get-namespaces`)
         .then((response) => {
           options.value = response.data.data
         })
@@ -48,23 +49,21 @@ export default {
     }
 
     function getTable(_, row) {
-      console.log("after table: ", row.Name)
       $q.dialog({
         title: 'Update Replicas',
-        message: 'Deployment: ' + row.Name,
+        message: 'Deployment: ' + row.name,
         prompt: {
-          model: '',
-          isValid: val => val != row.Replicas, // << here is the magic
+          model: row.replicas,
+          isValid: val => val != row.replicas,
           type: 'number'
         },
         cancel: true,
         persistent: true
       }).onOk(scaleStr => {
-        console.log('>>>> OK, received', scaleStr)
         const scale = parseInt(scaleStr, 10)
         api.post(`/api/v1/deploy/`, {
           "namespace": model.value,
-          "name": row.Name,
+          "name": row.name,
           "replicas": scale
         })
           .then((response) => {
