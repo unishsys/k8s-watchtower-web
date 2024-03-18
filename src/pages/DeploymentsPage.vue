@@ -111,7 +111,6 @@ function getDeployByNs() {
 }
 
 function setScale(rowData) {
-  console.log("row: ", rowData)
   const scale = parseInt(rowData.replicas, 10)
   api.post(`/api/v1/deploy/`, {
     "namespace": modelNs.value,
@@ -128,7 +127,6 @@ function setScale(rowData) {
       })
     })
     .catch((error) => {
-      console.log(error)
       $q.notify({
         color: 'error',
         position: 'top-right',
@@ -140,7 +138,6 @@ function setScale(rowData) {
 
 function getErrorMessage(rowData) {
 
-  console.log("get error msg: ", rowData)
 
   api.get(`/api/v1/deploy/${modelNs.value}/${rowData.name}`)
     .then((response) => {
@@ -148,7 +145,6 @@ function getErrorMessage(rowData) {
       errMsg = generateErrMsg(msg)
     })
     .catch((error) => {
-      console.log(error)
       $q.notify({
         color: 'error',
         position: 'top-right',
@@ -175,7 +171,6 @@ function generateErrMsg(podDetails) {
   if (errorMessage === '') {
     errorMessage = 'All containers are in a ready state.';
   }
-  console.log(errorMessage)
   return errorMessage.trim();
 }
 
