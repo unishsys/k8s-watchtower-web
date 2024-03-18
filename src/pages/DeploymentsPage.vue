@@ -97,7 +97,12 @@ function getDeployByNs() {
   if (modelNs.value) {
     api.get(`/api/v1/deploy/${modelNs.value}`)
       .then((response) => {
-        data.value = response.data.data
+        let resp = response.data.data
+        resp.forEach(obj => {
+          delete obj["labels"];
+        });
+        console.log(resp)
+        data.value = resp
       })
       .catch((error) => {
         $q.notify({
