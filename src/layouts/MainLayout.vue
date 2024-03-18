@@ -17,6 +17,7 @@
       <q-tabs align="left">
         <q-route-tab to="/" label="Deployments" />
         <q-route-tab to="/configmaps" label="ConfigMaps" />
+        <q-route-tab to="/services" label="Services" />
       </q-tabs>
     </q-header>
 
