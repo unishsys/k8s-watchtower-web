@@ -1,55 +1,18 @@
 <template>
   <q-page class="flex flex-center">
-    <div>
-      <div class="col">
-        <q-select v-model="modelNs" :options="options" @update:model-value="getDeployByNs" label="Select Namespace" />
+    <q-form v-model="svcForm" @submit="onSubmit" @reset="onReset" class="q-gutter-md">
+
+      <q-select v-model="svcForm.namespace" :options="optionsNs" @update:model-value="getDeployByNs"
+        label="Select Namespace" />
+      <q-select v-model="svcForm.deployName" :options="optionsDeploy" label="Select Deployment" />
+
+      <q-input filled type="number" v-model="svcForm.servicePort" label="Service Port *" lazy-rules />
+      <q-input filled type="number" v-model="svcForm.containerPort" label="Container Port *" lazy-rules />
+      <div>
+        <q-btn label="Submit" type="submit" color="primary" />
+        <q-btn label="Reset" type="reset" color="primary" flat class="q-ml-sm" />
       </div>
-      <!-- <div class="q-pa-md col">
-        <q-table :rows="data" row-key="name" flat bordered clickable title="Deployments" @row-click="getTable" />
-      </div> -->
-
-      <q-table flat bordered title="Deploy" :rows="data" :columns="columns" row-key="name" binary-state-sort>
-        <template v-slot:body="props">
-          <q-tr :props="props" :class="(props.row.status == 'success') ? 'bg-dark text-white' : 'bg-error text-black'">
-            <q-td key="name" :props="props">
-              {{ props.row.name }}
-            </q-td>
-            <q-td key="replicas" :props="props">
-              {{ props.row.replicas }}
-              <q-popup-edit v-model="props.row.replicas" title="Update Replica" v-slot="scope">
-                <q-input v-model="scope.value" dense autofocus @keyup.enter="scope.set" hint="Replica Count">
-                  <template v-slot:after>
-                    <q-btn flat dense color="negative" icon="cancel" @click.stop.prevent="scope.cancel" />
-
-                    <q-btn flat dense color="positive" icon="check_circle" @click.stop.prevent="scope.set"
-                      @click="setScale(props.row)"
-                      :disable="scope.validate(scope.value) === false || scope.initialValue === scope.value" />
-                  </template>
-                </q-input>
-
-              </q-popup-edit>
-            </q-td>
-
-            <q-td key="availableReplicas" :props="props">
-              {{ props.row.availableReplicas }}
-            </q-td>
-
-            <q-td key="readyReplicas" :props="props">
-              {{ props.row.readyReplicas }}
-            </q-td>
-
-            <q-td key="status" :props="props" :class="props.row.status">
-              {{ props.row.status }}
-            </q-td>
-
-            <q-td key="createdAt" :props="props" :class="props.row.createdAt">
-              {{ props.row.createdAt }}
-            </q-td>
-
-          </q-tr>
-        </template>
-      </q-table>
-    </div>
+    </q-form>
   </q-page>
 </template>
 
@@ -60,53 +23,28 @@ import { useQuasar } from 'quasar'
 
 
 const $q = useQuasar()
-const data = ref([])
-const modelNs = ref(null)
-const options = ref([])
+const optionsDeploy = ref([])
+const optionsNs = ref([])
+const svcForm = ref({
+  namespace: null,
+  deployName: null,
+  servicePort: null,
+  containerPort: null
+})
 
 function getNamespaces() {
   api.get(`/api/v1/get-namespaces`)
     .then((response) => {
-      options.value = response.data.data
+      optionsNs.value = response.data.data
     })
 }
 
 function getDeployByNs() {
-  if (modelNs.value) {
-    api.get(`/api/v1/deploy/${modelNs.value}`)
-      .then((response) => {
-        data.value = response.data.data
-      })
-      .catch((error) => {
-        $q.notify({
-          color: 'error',
-          position: 'top-right',
-          message: error.message,
-          icon: 'report_problem'
-        })
-      })
-  }
-}
-
-function setScale(rowData) {
-  console.log("row: ", rowData)
-  const scale = parseInt(rowData.replicas, 10)
-  api.post(`/api/v1/deploy/`, {
-    "namespace": modelNs.value,
-    "name": rowData.name,
-    "replicas": scale
-  })
+  api.get(`/api/v1/deploy/${svcForm.value.namespace}`)
     .then((response) => {
-      let d = response.data
-      $q.notify({
-        color: d.status,
-        position: 'top-right',
-        message: d.msg + " -> " + rowData.replicas,
-        icon: 'done'
-      })
+      optionsDeploy.value = response.data.data.map(item => item.name)
     })
     .catch((error) => {
-      console.log(error)
       $q.notify({
         color: 'error',
         position: 'top-right',
@@ -116,12 +54,14 @@ function setScale(rowData) {
     })
 }
 
-
+function onReset() {
+  svcForm.value = {}
+}
+function onSubmit(evt) {
+  console.log(evt)
+  console.log(svcForm.value)
+}
 
 onMounted(getNamespaces)
-
-
-
-
 
 </script>
