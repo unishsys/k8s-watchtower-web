@@ -21,7 +21,7 @@
         <q-select v-model="modelNs" :options="options" @update:model-value="getDeployByNs" label="Select Namespace" />
       </div>
 
-      <q-table flat bordered title="Deploy" :rows="data" :columns="columns" row-key="name" binary-state-sort>
+      <q-table flat bordered title="Deploy" :rows="data" row-key="name" binary-state-sort>
         <template v-slot:body="props">
           <q-tr :props="props">
             <q-td key="name" :props="props">
