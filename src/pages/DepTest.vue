@@ -16,13 +16,13 @@
             </q-td>
             <q-td key="replicas" :props="props">
               {{ props.row.replicas }}
-              <q-popup-edit v-model="replicaCount" title="Update Replica" v-slot="scope">
+              <q-popup-edit v-model="props.row.replicas" title="Update Replica" v-slot="scope">
                 <q-input v-model="scope.value" dense autofocus @keyup.enter="scope.set" hint="Replica Count">
                   <template v-slot:after>
                     <q-btn flat dense color="negative" icon="cancel" @click.stop.prevent="scope.cancel" />
 
                     <q-btn flat dense color="positive" icon="check_circle" @click.stop.prevent="scope.set"
-                      @click="getValue"
+                      @click="setScale(props.row)"
                       :disable="scope.validate(scope.value) === false || scope.initialValue === scope.value" />
                   </template>
                 </q-input>
@@ -63,7 +63,6 @@ const $q = useQuasar()
 const data = ref([])
 const modelNs = ref(null)
 const options = ref([])
-const replicaCount = ref()
 
 function getNamespaces() {
   api.get(`/api/v1/get-namespaces`)
@@ -89,37 +88,35 @@ function getDeployByNs() {
   }
 }
 
-function getValue() {
-  console.log("called: ", replicaCount.value)
+function setScale(rowData) {
+  console.log("row: ", rowData)
+  const scale = parseInt(rowData.replicas, 10)
+  api.post(`/api/v1/deploy/`, {
+    "namespace": modelNs.value,
+    "name": rowData.name,
+    "replicas": scale
+  })
+    .then((response) => {
+      let d = response.data
+      $q.notify({
+        color: d.status,
+        position: 'top-right',
+        message: d.msg + " -> " + rowData.replicas,
+        icon: 'done'
+      })
+    })
+    .catch((error) => {
+      console.log(error)
+      $q.notify({
+        color: 'error',
+        position: 'top-right',
+        message: error.message,
+        icon: 'report_problem'
+      })
+    })
 }
 
-function getTable() {
-  console.log("row", replicaCount.value)
-  // const scale = parseInt(row.replicas, 10)
-  // api.post(`/api/v1/deploy/`, {
-  //   "namespace": modelNs.value,
-  //   "name": row.name,
-  //   "replicas": scale
-  // })
-  //   .then((response) => {
-  //     let d = response.data
-  //     $q.notify({
-  //       color: d.status,
-  //       position: 'top-right',
-  //       message: d.msg,
-  //       icon: 'done'
-  //     })
-  //   })
-  //   .catch((error) => {
-  //     console.log(error)
-  //     $q.notify({
-  //       color: 'error',
-  //       position: 'top-right',
-  //       message: error.message,
-  //       icon: 'report_problem'
-  //     })
-  //   })
-}
+
 
 onMounted(getNamespaces)
 
