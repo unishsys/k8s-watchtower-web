@@ -14,3 +14,10 @@
 .bg-error {
   background: #db4831 !important;
 }
+
+.neubutton {
+  text-align: center;
+  border-radius: 1em;
+  box-shadow: 2px 2px 3px #464646,
+    -2px -2px 3px #5e5e5e;
+}

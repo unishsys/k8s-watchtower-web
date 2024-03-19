@@ -28,7 +28,8 @@
               {{ props.row.name }}
             </q-td>
             <q-td key="replicas" :props="props">
-              {{ props.row.replicas }}
+              <div class="neubutton">{{ props.row.replicas }}</div>
+
               <q-popup-edit v-model="props.row.replicas" title="Update Replica" v-slot="scope">
                 <q-input v-model="scope.value" dense autofocus @keyup.enter="scope.set" hint="Replica Count">
                   <template v-slot:after>
