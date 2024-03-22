@@ -14,10 +14,36 @@
       </q-card-actions>
     </q-card>
   </q-dialog>
+  <q-dialog v-model="dialog" persistent :maximized="maximizedToggle" transition-show="slide-up"
+    transition-hide="slide-down">
+    <q-card class="bg-primary--dark">
+      <q-bar>
+        <q-space />
+
+        <q-btn dense flat icon="minimize" @click="maximizedToggle = false" :disable="maximizedToggle">
+          <q-tooltip v-if="!maximizedToggle" class="bg-white text-primary">Minimize</q-tooltip>
+        </q-btn>
+        <q-btn dense flat icon="crop_square" @click="maximizedToggle = true" :disable="!maximizedToggle">
+          <q-tooltip v-if="maximizedToggle" class="bg-white text-primary">Maximize</q-tooltip>
+        </q-btn>
+        <q-btn dense flat icon="close" v-close-popup @click="clearResp">
+          <q-tooltip class="bg-white text-primary">Close</q-tooltip>
+        </q-btn>
+      </q-bar>
+
+      <q-card-section>
+        <div class="text-h6">Response</div>
+      </q-card-section>
+
+      <q-card-section class="q-pt-none">
+        <div v-html="airesp"></div>
+      </q-card-section>
+    </q-card>
+  </q-dialog>
   <q-page>
+
     <div style="margin-left: 4%;margin-right: 4%; margin-top: 2%">
       <div class="full-width row wrap justify-start items-start content-stretch">
-
         <div class="col-6">
           <div class="q-mb-md q-pr-xl q-pt-xl">
             <q-select v-model="modelNs" :options="options" @update:model-value="getDeployByNs"
@@ -91,17 +117,18 @@
   }" />
 
           </div>
-          <div class="q-pa-md q-gutter-sm">
+          <div class="row q-pa-md q-gutter-sm">
             <q-btn style="margin-left: 15%;" color="secondary" label="Update Deployment" clickable
               @click="updateDeploy()" />
+            <q-btn v-if="content && editTitle" style="margin-left: 15%;" color="blue-14" label="Ask AI?" clickable
+              @click="askAI()" />
           </div>
         </div>
 
       </div>
 
-
-
     </div>
+
   </q-page>
 </template>
 
@@ -115,17 +142,20 @@ import 'ace-builds/src-noconflict/mode-yaml';
 import 'ace-builds/src-noconflict/theme-tomorrow_night';
 
 
-const $q = useQuasar()
-const data = ref([])
-const modelNs = ref(null)
-const editTitle = ref("")
-const options = ref([])
-const alert = ref(false)
-let errMsg = ''
-let podName = ''
-
-
+const $q = useQuasar();
+const data = ref([]);
+const modelNs = ref(null);
+const editTitle = ref(null);
+const options = ref([]);
+const alert = ref(false);
 const content = ref("");
+const airesp = ref(null);
+const dialog = ref(false);
+const maximizedToggle = ref(false);
+let errMsg = '';
+let podName = '';
+
+
 function getNamespaces() {
   api.get(`/api/v1/get-namespaces`)
     .then((response) => {
@@ -169,7 +199,7 @@ function setScale(rowData) {
         message: d.msg + " -> " + rowData.replicas,
         icon: 'done'
       })
-      setInterval(() => {
+      setTimeout(() => {
         getDeployByNs()
       }, 3000)
     })
@@ -216,7 +246,7 @@ function updateDeploy() {
         message: response.data.msg,
         icon: 'done'
       })
-      setInterval(() => {
+      setTimeout(() => {
         getDeployByNs()
       }, 3000)
     })
@@ -265,6 +295,59 @@ function generateErrMsg(podDetails) {
   return errorMessage.trim();
 }
 
+async function askAI() {
+  let doc = `you are an kubernetes and devops expert. for a given kubernetes deployment manifest in YAML format, you will provide only the missing best practices in htlm format use for code use pre tag and for text use p tag :\n---\n${content.value}`;
+
+  const response = await fetch(`http://localhost:11434/api/generate`, {
+    method: 'POST',
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      model: "mistral",
+      prompt: doc,
+    })
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  airesp.value = ''
+  dialog.value = true
+  const reader = response.body.getReader();
+
+  // Function to read data chunks
+  const readChunk = async () => {
+    const { done, value } = await reader.read();
+    if (done) {
+      console.log("stream done");
+      return;
+    }
+    const decoder = new TextDecoder("utf-8");
+    const stringData = decoder.decode(value);
+    const respData = JSON.parse(stringData);
+
+    console.log(respData.response);
+    airesp.value += respData.response
+    readChunk(); // Call itself recursively to read next chunk
+  }
+
+  readChunk(); // Start reading chunks
+}
+
+function clearResp() {
+  airesp.value = null
+  dialog.value = false
+}
+
 onMounted(getNamespaces)
 
 </script>
+
+<style scoped>
+h1 {
+  font-size: 2em !important;
+  size: 2em;
+}
+</style>
