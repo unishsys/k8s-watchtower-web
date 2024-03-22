@@ -133,9 +133,9 @@ function onDelete(row) {
         message: "Service Deleted: " + row.name,
         icon: 'done'
       })
-      setInterval(() => {
+      setTimeout(() => {
         getDeployByNs()
-      }, 1000)
+      }, 3000)
     })
     .catch((error) => {
       $q.notify({
@@ -169,9 +169,9 @@ function onSubmit() {
         message: resp.data.msg + ": " + resp.data.data.metadata.name,
         icon: 'done'
       })
-      setInterval(() => {
+      setTimeout(() => {
         getDeployByNs()
-      }, 1000)
+      }, 3000)
     })
     .catch((error) => {
       $q.notify({
