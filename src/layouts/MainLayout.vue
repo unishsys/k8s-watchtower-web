@@ -7,7 +7,7 @@
 
           <div class="row">
             <q-avatar>
-              <img src="/public/icons/logo.png" />
+              <img src="../../public/icons/logo.png" />
             </q-avatar>
 
             <div class="text-h5 text-weight-light self-center q-ml-sm">
@@ -15,7 +15,7 @@
             </div>
 
             <q-avatar class="self-center absolute-right q-mr-md">
-              <img clickable @click="toggleDark" src="/public/icons/dark-mode.png" />
+              <img clickable @click="toggleDark" src="../../public/icons/dark-mode.png" />
             </q-avatar>
           </div>
         </q-toolbar-title>
