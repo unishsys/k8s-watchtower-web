@@ -7,16 +7,16 @@
 
           <div class="row">
             <q-avatar>
-              <img src="../../public/icons/logo.png" />
+              <img src="/public/icons/logo.png" />
             </q-avatar>
 
             <div class="text-h5 text-weight-light self-center q-ml-sm">
               Kube Watchtower
             </div>
 
-            <div class="self-center absolute-right q-mr-md">
-              <q-icon clickable @click="toggleDark" name="img:../../public/icons/dark-mode.svg" size="1.5em" />
-            </div>
+            <q-avatar class="self-center absolute-right q-mr-md">
+              <img clickable @click="toggleDark" src="/public/icons/dark-mode.png" />
+            </q-avatar>
           </div>
         </q-toolbar-title>
       </q-toolbar>
