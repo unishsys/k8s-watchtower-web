@@ -11,11 +11,11 @@
     </div>
 
     <div>
-      <VAceEditor v-model:value="content" lang="yaml" theme="dracula" :options="{
+      <VAceEditor v-model:value="content" lang="yaml" theme="tomorrow_night" :options="{
           autoScrollEditorIntoView: true,
           copyWithEmptySelection: true,
           fontSize: 15,
-          minLines: 30,
+          minLines: 40,
           maxLines: 80,
         }" />
     </div>
@@ -36,7 +36,7 @@ import { api } from 'boot/axios'
 // ace imports
 import { VAceEditor } from 'vue3-ace-editor';
 import 'ace-builds/src-noconflict/mode-yaml';
-import 'ace-builds/src-noconflict/theme-dracula';
+import 'ace-builds/src-noconflict/theme-tomorrow_night';
 
 
 const content = ref('');
