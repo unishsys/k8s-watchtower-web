@@ -169,6 +169,9 @@ function setScale(rowData) {
         message: d.msg + " -> " + rowData.replicas,
         icon: 'done'
       })
+      setInterval(() => {
+        getDeployByNs()
+      }, 3000)
     })
     .catch((error) => {
       $q.notify({
@@ -213,7 +216,7 @@ function updateDeploy() {
         message: response.data.msg,
         icon: 'done'
       })
-      setTimeout(() => {
+      setInterval(() => {
         getDeployByNs()
       }, 3000)
     })
