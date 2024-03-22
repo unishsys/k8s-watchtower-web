@@ -143,8 +143,6 @@ function setScale(rowData) {
 }
 
 function getErrorMessage(rowData) {
-
-
   api.get(`/api/v1/deploy/${modelNs.value}/${rowData.name}`)
     .then((response) => {
       const msg = response.data

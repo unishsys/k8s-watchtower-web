@@ -1,21 +1,29 @@
 <template>
   <q-layout view="hHh lpR fFf">
 
-    <q-header elevated class="bg-primary text-white" height-hint="98">
+    <q-header elevated class="bg-header text-white" height-hint="98">
       <q-toolbar>
         <q-toolbar-title>
-          <q-avatar>
-            <img src="https://cdn.quasar.dev/logo-v2/svg/logo-mono-white.svg">
-          </q-avatar>
-          K8s Manager
-          <q-icon side name="star_half" clickable @click="toggleDark">
 
-          </q-icon>
+          <div class="row">
+            <q-avatar>
+              <img src="../../public/icons/logo.png" />
+            </q-avatar>
+
+            <div class="text-h5 text-weight-light self-center q-ml-sm">
+              Kube Watchtower
+            </div>
+
+            <div class="self-center absolute-right q-mr-md">
+              <q-icon clickable @click="toggleDark" name="img:../../public/icons/dark-mode.svg" size="1.5em" />
+            </div>
+          </div>
         </q-toolbar-title>
       </q-toolbar>
 
       <q-tabs align="left">
-        <q-route-tab to="/" label="Deployments" />
+        <q-route-tab to="/" label="Overview" />
+        <q-route-tab to="/deployments" label="Deployments" />
         <q-route-tab to="/configmaps" label="ConfigMaps" />
         <q-route-tab to="/services" label="Services" />
       </q-tabs>

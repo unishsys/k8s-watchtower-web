@@ -7,6 +7,10 @@
   background: #31db50 !important;
 }
 
+.bg-header {
+  background: #666d6c !important;
+}
+
 .text-error {
   color: #db4831 !important;
 }

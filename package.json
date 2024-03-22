@@ -1,8 +1,8 @@
 {
-  "name": "k8s-web",
+  "name": "kube-watchtower",
   "version": "0.0.1",
-  "description": "K8S Management",
-  "productName": "K8S management",
+  "description": "Kube Watchtower",
+  "productName": "Kube Watchtower",
   "author": "by-sabbir <me@sabbir.dev>",
   "private": true,
   "scripts": {
