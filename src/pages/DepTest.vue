@@ -11,6 +11,7 @@
 
       <q-card-actions align="right">
         <q-btn flat label="OK" color="primary" v-close-popup />
+        <q-btn flat label="Ask AI?" color="secondary" @click="askAIError(errMsg)" v-close-popup />
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -20,11 +21,11 @@
       <q-bar>
         <q-space />
 
-        <q-btn dense flat icon="minimize" @click="maximizedToggle = false" :disable="maximizedToggle">
-          <q-tooltip v-if="!maximizedToggle" class="bg-white text-primary">Minimize</q-tooltip>
+        <q-btn dense flat icon="minimize" @click="maximizedToggle = false" :disable="!maximizedToggle">
+          <q-tooltip v-if="!maximizedToggle" class="bg-white text-primary">Maximize</q-tooltip>
         </q-btn>
-        <q-btn dense flat icon="crop_square" @click="maximizedToggle = true" :disable="!maximizedToggle">
-          <q-tooltip v-if="maximizedToggle" class="bg-white text-primary">Maximize</q-tooltip>
+        <q-btn dense flat icon="crop_square" @click="maximizedToggle = true" :disable="maximizedToggle">
+          <q-tooltip v-if="maximizedToggle" class="bg-white text-primary">Minimize</q-tooltip>
         </q-btn>
         <q-btn dense flat icon="close" v-close-popup @click="clearResp">
           <q-tooltip class="bg-white text-primary">Close</q-tooltip>
@@ -151,7 +152,7 @@ const alert = ref(false);
 const content = ref("");
 const airesp = ref(null);
 const dialog = ref(false);
-const maximizedToggle = ref(true);
+const maximizedToggle = ref(false);
 let errMsg = '';
 let podName = '';
 
@@ -339,6 +340,46 @@ async function askAI() {
 function clearResp() {
   airesp.value = null
   dialog.value = false
+}
+
+async function askAIError(msg) {
+  let doc = `you are an kubernetes and devops expert. for a given kubernetes error message, you will provide most possible debugging points try to keep them as concise as possible in htlm format use for code use pre tag and for text use p tag :\n---\n${msg}`;
+  const response = await fetch(`http://localhost:11434/api/generate`, {
+    method: 'POST',
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      model: "mistral",
+      prompt: doc,
+    })
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  airesp.value = ''
+  dialog.value = true
+  const reader = response.body.getReader();
+
+  // Function to read data chunks
+  const readChunk = async () => {
+    const { done, value } = await reader.read();
+    if (done) {
+      console.log("stream done");
+      return;
+    }
+    const decoder = new TextDecoder("utf-8");
+    const stringData = decoder.decode(value);
+    const respData = JSON.parse(stringData);
+
+    console.log(respData.response);
+    airesp.value += respData.response
+    readChunk(); // Call itself recursively to read next chunk
+  }
+
+  readChunk(); // Start reading chunks
 }
 
 onMounted(getNamespaces)
