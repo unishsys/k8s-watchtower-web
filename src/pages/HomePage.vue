@@ -1,53 +1,16 @@
 <template>
-  <q-page flex flex-center class="q-ma-lg">
+  <div style="margin-right: 15%;margin-left: 15%;">
+    <q-page flex flex-center class="q-ma-lg">
 
-    <p class="text-h5 q-pt-xl text-weight-light">Node Details</p>
-    <div class="full-width row no-wrap justify-around">
-      <apexchart ref="chart" height="300" type="bar" :options="barChartOptions" :series="barChartOptions.series"
-        class="col-grow">
-      </apexchart>
-      <apexchart type="pie" width="380" :options="piChartOptions.chartOptions" :series="piChartOptions.series"
-        class="overflow-auto">
-      </apexchart>
-    </div>
-    <div class="q-pt-xl">
-      <p class="text-h5 q-pt-xl text-weight-light">Nodes Info</p>
-      <q-table flat bordered title="" :rows="nodeTable" row-key="nodeName" binary-state-sort>
-        <template v-slot:body="props">
-          <q-tr :props="props">
-            <q-td key="nodeName" :props="props">
-              {{ props.row.nodeName }}
-            </q-td>
-            <q-td key="cpuQuantity" :props="props">
-              {{ props.row.cpuQuantity }}
-            </q-td>
-            <q-td key="memoryQuantity" :props="props">
-              {{ props.row.memoryQuantity }}
-            </q-td>
-            <q-td key="podQuantity" :props="props">
-              {{ props.row.podQuantity }}
-            </q-td>
-            <q-td key="containerCount" :props="props">
-              {{ props.row.containerCount }}
-            </q-td>
-
-            <q-td key="ready" :props="props">
-              <div v-if="props.row.ready">
-                <q-icon name="check_circle" size="2em" color="green-12" />
-              </div>
-              <div v-else>
-                <q-icon name="error" size="2em" color="red-12" />
-              </div>
-            </q-td>
-
-            <q-td key="conditions" :props="props">
-              <span v-for="condition in props.row.conditions" :key="condition.type">
-                {{ condition.message }} <br />
-              </span>
-            </q-td>
-          </q-tr>
-        </template>
-      </q-table>
+      <p class="text-h5 q-pt-xl text-weight-light">Node Details</p>
+      <div class="row no-wrap justify-around">
+        <apexchart ref="chart" height="300" type="bar" :options="barChartOptions" :series="barChartOptions.series"
+          class="col-grow">
+        </apexchart>
+        <apexchart type="pie" width="380" :options="piChartOptions.chartOptions" :series="piChartOptions.series"
+          class="overflow-auto">
+        </apexchart>
+      </div>
 
       <div class="q-pt-xl">
         <p class="text-h5 q-pt-md text-weight-light">Pods Info</p>
@@ -82,8 +45,52 @@
           </template>
         </q-table>
       </div>
-    </div>
-  </q-page>
+      <div class="q-pt-xl">
+        <p class="text-h5 q-pt-xl text-weight-light">Nodes Info</p>
+        <q-table flat bordered title="" :rows="nodeTable" row-key="nodeName" binary-state-sort>
+          <template v-slot:body="props">
+            <q-tr :props="props">
+              <q-td key="nodeName" :props="props">
+                {{ props.row.nodeName }}
+              </q-td>
+              <q-td key="cpuQuantity" :props="props">
+                {{ props.row.cpuQuantity }}
+              </q-td>
+              <q-td key="memoryQuantity" :props="props">
+                {{ props.row.memoryQuantity }}
+              </q-td>
+              <q-td key="cpuUsage" :props="props">
+                {{ parseInt(props.row.cpuUsage / 1024) }}
+              </q-td>
+              <q-td key="memoryUsage" :props="props">
+                {{ parseInt(props.row.memoryUsage / (1024 * 1024)) }} Mi
+              </q-td>
+              <q-td key="podQuantity" :props="props">
+                {{ props.row.podQuantity }}
+              </q-td>
+              <q-td key="containerCount" :props="props">
+                {{ props.row.containerCount }}
+              </q-td>
+              <q-td key="ready" :props="props">
+                <div v-if="props.row.ready">
+                  <q-icon name="check_circle" size="2em" color="green-12" />
+                </div>
+                <div v-else>
+                  <q-icon name="error" size="2em" color="red-12" />
+                </div>
+              </q-td>
+
+              <q-td key="conditions" :props="props">
+                <span v-for="condition in props.row.conditions" :key="condition.type">
+                  {{ condition.message }} <br />
+                </span>
+              </q-td>
+            </q-tr>
+          </template>
+        </q-table>
+      </div>
+    </q-page>
+  </div>
 </template>
 
 <script setup>

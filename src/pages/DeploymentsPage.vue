@@ -55,10 +55,10 @@
             <q-td key="status" :props="props" :class="props.row.status" style="align-content: center;">
 
               <div v-if="props.row.status === 'success'">
-                <q-icon name="check_circle" size="2rem" color="green-7" />
+                <q-icon name="check_circle" size="2em" color="green-12" @click="getDeployStatus(props.row)" />
               </div>
               <div v-else>
-                <q-icon name="error" size="2rem" color="red-7" clickable @click="getErrorMessage(props.row)" />
+                <q-icon name="error" size="2rem" color="red-12" clickable @click="getDeployStatus(props.row)" />
               </div>
             </q-td>
 
@@ -142,7 +142,7 @@ function setScale(rowData) {
     })
 }
 
-function getErrorMessage(rowData) {
+function getDeployStatus(rowData) {
   api.get(`/api/v1/deploy/${modelNs.value}/${rowData.name}`)
     .then((response) => {
       const msg = response.data
