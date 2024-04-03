@@ -41,6 +41,36 @@
       </q-card-section>
     </q-card>
   </q-dialog>
+
+  <q-dialog v-model="logdialog" persistent :maximized="maximizedToggle" transition-show="slide-up"
+    transition-hide="slide-down">
+    <q-card class="bg-primary--dark" @keyup.esc.prevent="closeLog" tabindex="0">
+      <q-bar>
+        <q-space />
+
+        <q-btn dense flat icon="minimize" @click="maximizedToggle = false" :disable="!maximizedToggle">
+          <q-tooltip v-if="!maximizedToggle" class="bg-white text-primary">Maximize</q-tooltip>
+        </q-btn>
+        <q-btn dense flat icon="crop_square" @click="maximizedToggle = true" :disable="maximizedToggle">
+          <q-tooltip v-if="maximizedToggle" class="bg-white text-primary">Minimize</q-tooltip>
+        </q-btn>
+        <q-btn dense flat icon="close" v-close-popup @click="closeLog">
+          <q-tooltip class="bg-white text-primary">Close</q-tooltip>
+        </q-btn>
+      </q-bar>
+
+      <q-card-section>
+        <div class="text-h6">Logs Streaming</div>
+      </q-card-section>
+
+      <q-card-section class="q-pt-none">
+        <div id="logdata">
+          <div v-html="log"></div>
+        </div>
+      </q-card-section>
+    </q-card>
+  </q-dialog>
+
   <q-page>
 
     <div style="margin-left: 4%;margin-right: 4%; margin-top: 2%">
@@ -53,8 +83,8 @@
           <q-table flat bordered title="Deploy" :rows="data" row-key="name">
             <template v-slot:body="props">
               <q-tr :props="props">
-                <q-td key="name" :props="props">
-                  {{ props.row.name }}
+                <q-td key="name" :props="props" @click.stop="getLog(props.row)">
+                  <div class="neubutton"> {{ props.row.name }} </div>
                 </q-td>
                 <q-td key="replicas" :props="props">
                   <div class="neubutton">{{ props.row.replicas }}</div>
@@ -152,6 +182,8 @@ const alert = ref(false);
 const content = ref("");
 const airesp = ref(null);
 const dialog = ref(false);
+const logdialog = ref(false);
+const log = ref('')
 const maximizedToggle = ref(false);
 let errMsg = '';
 let podName = '';
@@ -380,6 +412,42 @@ async function askAIError(msg) {
   }
 
   readChunk(); // Start reading chunks
+}
+
+function closeLog() {
+  logdialog.value = false
+  log.value = ''
+}
+
+
+function getLog(rowData) {
+  let uri = `ws://172.28.80.110:8081/api/v1/logs/${modelNs.value}/${rowData.name}`
+  const socket = new WebSocket(uri)
+
+  logdialog.value = true
+  log.value = ''
+
+  socket.onmessage = (ev) => {
+    log.value += `<p class="text text-body1">${ev.data}</p></br>`
+
+    setTimeout(() => {
+      let scrollableDiv = document.getElementById("logdata")
+      var bottomElement = scrollableDiv.lastElementChild;
+      bottomElement
+        .scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }, 300);
+  }
+
+  socket.onerror = (err) => {
+    socket.close()
+    $q.notify({
+      color: 'error',
+      position: 'top-right',
+      message: err.message,
+      icon: 'report_problem'
+    })
+  }
+
 }
 
 onMounted(getNamespaces)
