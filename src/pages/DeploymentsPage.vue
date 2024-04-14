@@ -421,7 +421,7 @@ function closeLog() {
 
 
 function getLog(rowData) {
-  let uri = `ws://172.28.80.110:8081/api/v1/logs/${modelNs.value}/${rowData.name}`
+  let uri = `ws://localhost:8081/api/v1/logs/${modelNs.value}/${rowData.name}`
   const socket = new WebSocket(uri)
 
   logdialog.value = true
