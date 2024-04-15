@@ -83,7 +83,7 @@
           <q-table flat bordered title="Deploy" :rows="data" row-key="name">
             <template v-slot:body="props">
               <q-tr :props="props">
-                <q-td key="name" :props="props" @click.stop="getLog(props.row)">
+                <q-td key="name" :props="props" @click.stop="getDeploymentLogs(props.row)">
                   <div class="neubutton"> {{ props.row.name }} </div>
                 </q-td>
                 <q-td key="replicas" :props="props">
@@ -185,6 +185,7 @@ const dialog = ref(false);
 const logdialog = ref(false);
 const log = ref('')
 const maximizedToggle = ref(false);
+const socket = ref(null)
 let errMsg = '';
 let podName = '';
 
@@ -417,17 +418,19 @@ async function askAIError(msg) {
 function closeLog() {
   logdialog.value = false
   log.value = ''
+  socket.value.close()
 }
 
 
-function getLog(rowData) {
-  let uri = `ws://localhost:8081/api/v1/logs/${modelNs.value}/${rowData.name}`
-  const socket = new WebSocket(uri)
+function getDeploymentLogs(rowData) {
+  let uri = `ws://${window.location.host}/api/v1/logs/deploy/${modelNs.value}/${rowData.name}`
+
+  socket.value = new WebSocket(uri)
 
   logdialog.value = true
   log.value = ''
 
-  socket.onmessage = (ev) => {
+  socket.value.onmessage = (ev) => {
     log.value += `<p class="text text-body1">${ev.data}</p></br>`
 
     setTimeout(() => {
@@ -438,8 +441,8 @@ function getLog(rowData) {
     }, 300);
   }
 
-  socket.onerror = (err) => {
-    socket.close()
+  socket.value.onerror = (err) => {
+    socket.value.close()
     $q.notify({
       color: 'error',
       position: 'top-right',
