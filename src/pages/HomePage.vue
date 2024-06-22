@@ -232,7 +232,7 @@ function closeLog() {
 }
 
 function getPodLogs(rowData) {
-  let uri = `ws://${window.location.host}/api/v1/logs/pod/${rowData.namespace}/${rowData.name}`
+  let uri = `ws://192.168.1.101:8081/api/v1/logs/pod/${rowData.namespace}/${rowData.name}`
 
   socket.value = new WebSocket(uri)
 

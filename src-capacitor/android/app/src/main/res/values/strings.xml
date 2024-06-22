@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Kube Watchtower</string>
+    <string name="title_activity_main">Kube Watchtower</string>
+    <string name="package_name">dev.sabbir.kubewatchtower</string>
+    <string name="custom_url_scheme">dev.sabbir.kubewatchtower</string>
+</resources>

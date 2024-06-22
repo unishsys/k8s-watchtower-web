@@ -1,57 +1,60 @@
 <template>
-  <q-page class="flex flex-center">
-    <q-form v-model="svcForm" @submit="onSubmit" @reset="onReset" class="q-gutter-md">
-      <div class="row q-gutter-md">
-        <q-select v-model="svcForm.namespace" :options="optionsNs" @update:model-value="getDeployByNs"
-          label="Select Namespace" filled style="width: 180px;" />
-        <div v-if="svcForm.namespace">
-          <q-select v-model="svcForm.name" :options="optionsDeploy" label="Select Deployment" filled
-            style="width: 180px;" />
+  <q-page class="flex">
+    <q-form v-model="svcForm" @submit="onSubmit" @reset="onReset" class="">
+      <div style="margin-left: 5%;">
+        <div class="row q-pa-md">
+          <q-select v-model="svcForm.namespace" :options="optionsNs" @update:model-value="getDeployByNs"
+            label="Select Namespace" filled style="width: 180px; padding-right: 1em;" />
+          <div v-if="svcForm.namespace">
+            <q-select v-model="svcForm.name" :options="optionsDeploy" label="Select Deployment" filled
+              style="width: 180px; padding-right: 1em;" />
+          </div>
         </div>
-      </div>
-      <div v-if="svcForm.name" class="row q-gutter-md">
-        <q-input filled type="number" v-model="svcForm.containerPort" label="Container Port *" lazy-rules
-          style="width: 180px;" />
-        <q-input filled type="number" v-model="svcForm.servicePort" label="Service Port *" lazy-rules
-          style="width: 180px;" />
-      </div>
-      <div v-if="svcForm.containerPort && svcForm.servicePort" class="row q-gutter-md">
-        <q-select :options="optionsProtocol" v-model="svcForm.protocol" label="Service Protocol" filled
-          style="width: 180px;" />
-        <q-select :options="optionsType" v-model="svcForm.type" label="Service Type" filled style="width: 180px;" />
-      </div>
+        <div v-if="svcForm.name" class="row q-pa-md">
+          <q-input filled type="number" v-model="svcForm.containerPort" label="Container Port *" lazy-rules
+            style="width: 180px; padding-right: 1em;" />
+          <q-input filled type="number" v-model="svcForm.servicePort" label="Service Port *" lazy-rules
+            style="width: 180px; padding-right: 1em;" />
+        </div>
+        <div v-if="svcForm.containerPort && svcForm.servicePort" class="row q-pa-md">
+          <q-select :options="optionsProtocol" v-model="svcForm.protocol" label="Service Protocol" filled
+            style="width: 180px; padding-right: 1em;" />
+          <q-select :options="optionsType" v-model="svcForm.type" label="Service Type" filled
+            style="width: 180px; padding-right: 1em;" />
+        </div>
 
-      <div v-if="svcForm.protocol && svcForm.type" class="row q-gutter-md">
-        <q-btn label="Submit" type="submit" color="primary" class="q-pr-md" />
-        <q-btn label="Reset" type="reset" color="primary" flat class="q-ml-sm" />
-      </div>
+        <div v-if="svcForm.protocol && svcForm.type" class="row q-pa-md">
+          <q-btn label="Submit" type="submit" color="primary" class="q-pr-md" />
+          <q-btn label="Reset" type="reset" color="primary" flat class="q-ml-sm" />
+        </div>
+        <div v-if="svcForm.namespace" style="width: fit-content;">
+          <q-table title="Services" :rows="serviceTable" row-key="name" flat bordered>
+            <template v-slot:body="props">
+              <q-tr :props="props">
+                <q-td key="name" :props="props">
+                  {{ props.row.name }}
+                </q-td>
+                <q-td key="type" :props="props">
+                  {{ props.row.type }}
+                </q-td>
+                <q-td key="clusterIp" :props="props">
+                  {{ props.row.clusterIp }}
+                </q-td>
+                <q-td key="externalIp" :props="props">
+                  {{ props.row.externalIp }}
+                </q-td>
+                <q-td key="ports" :props="props">
+                  {{ props.row.ports }}
+                </q-td>
+                <q-td key="createdAt" :props="props">
+                  {{ props.row.createdAt }} <q-btn icon="delete" @click="onDelete(props.row)" color="red-12"
+                    class="q-ml-lg"></q-btn>
+                </q-td>
+              </q-tr>
+            </template>
+          </q-table>
+        </div>
 
-      <div v-if="svcForm.namespace">
-        <q-table title="Services" :rows="serviceTable" row-key="name" flat bordered>
-          <template v-slot:body="props">
-            <q-tr :props="props">
-              <q-td key="name" :props="props">
-                {{ props.row.name }}
-              </q-td>
-              <q-td key="type" :props="props">
-                {{ props.row.type }}
-              </q-td>
-              <q-td key="clusterIp" :props="props">
-                {{ props.row.clusterIp }}
-              </q-td>
-              <q-td key="externalIp" :props="props">
-                {{ props.row.externalIp }}
-              </q-td>
-              <q-td key="ports" :props="props">
-                {{ props.row.ports }}
-              </q-td>
-              <q-td key="createdAt" :props="props">
-                {{ props.row.createdAt }} <q-btn icon="delete" @click="onDelete(props.row)" color="red-12"
-                  class="q-ml-lg"></q-btn>
-              </q-td>
-            </q-tr>
-          </template>
-        </q-table>
       </div>
     </q-form>
   </q-page>

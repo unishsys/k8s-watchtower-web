@@ -74,8 +74,8 @@
   <q-page>
 
     <div style="margin-left: 4%;margin-right: 4%; margin-top: 2%">
-      <div class="full-width row wrap justify-start items-start content-stretch">
-        <div class="col-6">
+      <div class="full-width col">
+        <div>
           <div class="q-mb-md q-pr-xl q-pt-xl">
             <q-select v-model="modelNs" :options="options" @update:model-value="getDeployByNs"
               label="Select Namespace" />
@@ -134,12 +134,12 @@
           </q-table>
         </div>
 
-        <div class="q-ma-xl col-6 absolute-right">
-
+        <div>
           <div>
-            <div class="row text-h5 text-weight-light q-mb-md" style="margin-left: 15%;">Editing <span
-                class="q-ml-md text-weight-bold">{{ editTitle }}</span></div>
-            <VAceEditor style="margin-left: 15%;" v-model:value="content" lang="yaml" theme="tomorrow_night" :options="{
+            <div class="row text-h5 text-weight-light q-mt-md">Editing <span class="q-ml-md text-weight-bold">{{
+    editTitle
+  }}</span></div>
+            <VAceEditor v-model:value="content" lang="yaml" theme="tomorrow_night" :options="{
     autoScrollEditorIntoView: true,
     copyWithEmptySelection: true,
     fontSize: 15,
@@ -332,7 +332,7 @@ function generateErrMsg(podDetails) {
 async function askAI() {
   let doc = `you are an kubernetes and devops expert. for a given kubernetes deployment manifest in YAML format, you will provide only the missing best practices in htlm format use for code use pre tag and for text use p tag :\n---\n${content.value}`;
 
-  const response = await fetch(`http://localhost:11434/api/generate`, {
+  const response = await fetch(`http://192.168.1.101:11434/api/generate`, {
     method: 'POST',
     headers: {
       "Content-Type": "application/json"
@@ -377,7 +377,7 @@ function clearResp() {
 
 async function askAIError(msg) {
   let doc = `you are an kubernetes and devops expert. for a given kubernetes error message, you will provide most possible debugging points try to keep them as concise as possible in htlm format use <pre></pre> tag for all your respose, do not use title or heading:\n---\n${msg}`;
-  const response = await fetch(`http://localhost:11434/api/generate`, {
+  const response = await fetch(`http://192.168.1.101:11434/api/generate`, {
     method: 'POST',
     headers: {
       "Content-Type": "application/json"
@@ -423,7 +423,7 @@ function closeLog() {
 
 
 function getDeploymentLogs(rowData) {
-  let uri = `ws://${window.location.host}/api/v1/logs/deploy/${modelNs.value}/${rowData.name}`
+  let uri = `ws://192.168.1.101:8081/api/v1/logs/deploy/${modelNs.value}/${rowData.name}`
 
   socket.value = new WebSocket(uri)
 

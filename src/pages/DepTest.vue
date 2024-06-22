@@ -299,7 +299,7 @@ function generateErrMsg(podDetails) {
 async function askAI() {
   let doc = `you are an kubernetes and devops expert. for a given kubernetes deployment manifest in YAML format, you will provide only the missing best practices in htlm format use for code use pre tag and for text use p tag :\n---\n${content.value}`;
 
-  const response = await fetch(`http://localhost:11434/api/generate`, {
+  const response = await fetch(`http://192.168.1.101:11434/api/generate`, {
     method: 'POST',
     headers: {
       "Content-Type": "application/json"
@@ -344,7 +344,7 @@ function clearResp() {
 
 async function askAIError(msg) {
   let doc = `you are an kubernetes and devops expert. for a given kubernetes error message, you will provide most possible debugging points try to keep them as concise as possible in htlm format use for code use pre tag and for text use p tag :\n---\n${msg}`;
-  const response = await fetch(`http://localhost:11434/api/generate`, {
+  const response = await fetch(`http://192.168.1.101:11434/api/generate`, {
     method: 'POST',
     headers: {
       "Content-Type": "application/json"
