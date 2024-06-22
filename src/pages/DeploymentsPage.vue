@@ -64,7 +64,9 @@
       </q-card-section>
 
       <q-card-section class="q-pt-none">
-        <div v-html="airesp"></div>
+        <div id="airesp">
+          <div v-html="airesp"></div>
+        </div>
       </q-card-section>
     </q-card>
   </q-dialog>
@@ -459,6 +461,8 @@ function generateErrMsg(podDetails) {
 async function askAI() {
   let doc = `you are an kubernetes and devops expert. for a given kubernetes deployment manifest in YAML format, you will provide only the missing best practices in htlm format use for code use pre tag and for text use p tag :\n---\n${content.value}`;
 
+  airesp.value = "";
+  dialog.value = true;
   const response = await fetch(`http://192.168.1.101:11434/api/generate`, {
     method: "POST",
     headers: {
@@ -474,8 +478,6 @@ async function askAI() {
     throw new Error(`HTTP error! status: ${response.status}`);
   }
 
-  airesp.value = "";
-  dialog.value = true;
   const reader = response.body.getReader();
 
   // Function to read data chunks
@@ -492,6 +494,11 @@ async function askAI() {
     console.log(respData.response);
     airesp.value += respData.response;
     readChunk(); // Call itself recursively to read next chunk
+    setTimeout(() => {
+      let scrollableDiv = document.getElementById("airesp");
+      var bottomElement = scrollableDiv.lastElementChild;
+      bottomElement.scrollIntoView({ behavior: "smooth", block: "end" });
+    }, 300);
   };
 
   readChunk(); // Start reading chunks
@@ -504,6 +511,10 @@ function clearResp() {
 
 async function askAIError(msg) {
   let doc = `you are an kubernetes and devops expert. for a given kubernetes error message, you will provide most possible debugging points try to keep them as concise as possible in htlm format use <pre></pre> tag for all your respose, do not use title or heading:\n---\n${msg}`;
+
+  airesp.value = "";
+  dialog.value = true;
+
   const response = await fetch(`http://192.168.1.101:11434/api/generate`, {
     method: "POST",
     headers: {
@@ -519,8 +530,6 @@ async function askAIError(msg) {
     throw new Error(`HTTP error! status: ${response.status}`);
   }
 
-  airesp.value = "";
-  dialog.value = true;
   const reader = response.body.getReader();
 
   // Function to read data chunks
@@ -534,9 +543,14 @@ async function askAIError(msg) {
     const stringData = decoder.decode(value);
     const respData = JSON.parse(stringData);
 
-    console.log(respData.response);
     airesp.value += respData.response;
-    readChunk(); // Call itself recursively to read next chunk
+
+    readChunk();
+    setTimeout(() => {
+      let scrollableDiv = document.getElementById("airesp");
+      var bottomElement = scrollableDiv.lastElementChild;
+      bottomElement.scrollIntoView({ behavior: "smooth", block: "end" });
+    }, 300);
   };
 
   readChunk(); // Start reading chunks
