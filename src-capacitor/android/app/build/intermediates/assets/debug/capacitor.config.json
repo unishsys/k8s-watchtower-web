@@ -1,0 +1,9 @@
+{
+	"appId": "dev.sabbir.kubewatchtower",
+	"appName": "Kube Watchtower",
+	"webDir": "www",
+	"server": {
+		"androidScheme": "https",
+		"url": "http://192.168.1.101:8081"
+	}
+}
