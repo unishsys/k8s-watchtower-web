@@ -12,6 +12,35 @@
         </apexchart>
       </div>
 
+      <q-dialog v-model="logdialog" persistent :maximized="maximizedToggle" transition-show="slide-up"
+        transition-hide="slide-down">
+        <q-card class="bg-primary--dark" @keyup.esc.prevent="closeLog" tabindex="0">
+          <q-bar>
+            <q-space />
+
+            <q-btn dense flat icon="minimize" @click="maximizedToggle = false" :disable="!maximizedToggle">
+              <q-tooltip v-if="!maximizedToggle" class="bg-white text-primary">Maximize</q-tooltip>
+            </q-btn>
+            <q-btn dense flat icon="crop_square" @click="maximizedToggle = true" :disable="maximizedToggle">
+              <q-tooltip v-if="maximizedToggle" class="bg-white text-primary">Minimize</q-tooltip>
+            </q-btn>
+            <q-btn dense flat icon="close" v-close-popup @click="closeLog">
+              <q-tooltip class="bg-white text-primary">Close</q-tooltip>
+            </q-btn>
+          </q-bar>
+
+          <q-card-section>
+            <div class="text-h6">Logs Streaming</div>
+          </q-card-section>
+
+          <q-card-section class="q-pt-none">
+            <div id="logdata">
+              <div v-html="log"></div>
+            </div>
+          </q-card-section>
+        </q-card>
+      </q-dialog>
+
       <div class="q-pt-xl">
         <p class="text-h5 q-pt-md text-weight-light">Pods Info</p>
         <q-table :rows="podTable" flat bordered row-key="name">
@@ -21,8 +50,8 @@
               <q-td key="namespace" :props="props">
                 {{ props.row.namespace }}
               </q-td>
-              <q-td key="name" :props="props">
-                {{ props.row.name }}
+              <q-td key="name" :props="props" @click.stop="getPodLogs(props.row)">
+                <div class="neubutton"> {{ props.row.name }} </div>
               </q-td>
               <q-td key="restarts" :props="props">
                 {{ props.row.restarts }}
@@ -34,7 +63,7 @@
                 {{ parseInt(props.row.memory / (1024 * 1024)) }} Mi
               </q-td>
               <q-td key="status" :props="props">
-                <div v-if="props.row.staus == Running">
+                <div v-if="props.row.status == 'Running'">
                   <q-icon name="check_circle" size="2em" color="green-12" />
                 </div>
                 <div v-else>
@@ -94,12 +123,18 @@
 </template>
 
 <script setup>
+import { useQuasar } from 'quasar'
 import { ref, onMounted } from 'vue'
 import { api } from 'boot/axios'
 import VueApexCharts from "vue3-apexcharts";
 
+const $q = useQuasar();
+const logdialog = ref(false);
+const log = ref('')
+const maximizedToggle = ref(false);
 const nodeTable = ref([])
 const podTable = ref([])
+const socket = ref(null)
 const apexchart = VueApexCharts
 const piChartLabel = ref([])
 const piChartOptions = ref({
@@ -188,6 +223,43 @@ function getPodInfo() {
     .then((response) => {
       podTable.value = response.data.data
     })
+}
+
+function closeLog() {
+  logdialog.value = false
+  log.value = ''
+  socket.value.close()
+}
+
+function getPodLogs(rowData) {
+  let uri = `ws://${window.location.host}/api/v1/logs/pod/${rowData.namespace}/${rowData.name}`
+
+  socket.value = new WebSocket(uri)
+
+  logdialog.value = true
+  log.value = ''
+
+  socket.value.onmessage = (ev) => {
+    log.value += `<p class="text text-body1">${ev.data}</p></br>`
+
+    setTimeout(() => {
+      let scrollableDiv = document.getElementById("logdata")
+      var bottomElement = scrollableDiv.lastElementChild;
+      bottomElement
+        .scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }, 300);
+  }
+
+  socket.value.onerror = (err) => {
+    socket.value.close()
+    $q.notify({
+      color: 'error',
+      position: 'top-right',
+      message: err.message,
+      icon: 'report_problem'
+    })
+  }
+
 }
 
 onMounted(() => {
