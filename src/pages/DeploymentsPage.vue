@@ -288,7 +288,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, nextTick } from "vue";
 import { api } from "boot/axios";
 import { useQuasar } from "quasar";
 
@@ -461,99 +461,122 @@ function generateErrMsg(podDetails) {
 async function askAI() {
   let doc = `you are an kubernetes and devops expert. for a given kubernetes deployment manifest in YAML format, you will provide only the missing best practices in htlm format use for code use pre tag and for text use p tag :\n---\n${content.value}`;
 
-  airesp.value = "";
+  airesp.value = ""; // Clear previous response
   dialog.value = true;
-  const response = await fetch(`http://192.168.1.101:11434/api/generate`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: "mistral",
-      prompt: doc,
-    }),
-  });
 
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
-  }
+  try {
+    const response = await fetch(`http://localhost:11434/api/generate`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "phi3:latest",
+        prompt: doc,
+        stream: true,
+      }),
+    });
 
-  const reader = response.body.getReader();
-
-  // Function to read data chunks
-  const readChunk = async () => {
-    const { done, value } = await reader.read();
-    if (done) {
-      console.log("stream done");
-      return;
+    if (!response.body) {
+      throw new Error("ReadableStream not supported");
     }
-    const decoder = new TextDecoder("utf-8");
-    const stringData = decoder.decode(value);
-    const respData = JSON.parse(stringData);
 
-    console.log(respData.response);
-    airesp.value += respData.response;
-    readChunk(); // Call itself recursively to read next chunk
-    setTimeout(() => {
-      let scrollableDiv = document.getElementById("airesp");
-      var bottomElement = scrollableDiv.lastElementChild;
-      bottomElement.scrollIntoView({ behavior: "smooth", block: "end" });
-    }, 300);
-  };
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
 
-  readChunk(); // Start reading chunks
-}
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
 
-function clearResp() {
-  airesp.value = null;
-  dialog.value = false;
+      const chunk = decoder.decode(value);
+      const lines = chunk.split("\n").filter((line) => line.trim());
+
+      for (const line of lines) {
+        try {
+          const parsed = JSON.parse(line);
+          if (parsed.response) {
+            airesp.value += parsed.response;
+          }
+        } catch (e) {
+          console.error("Error parsing JSON:", e);
+        }
+      }
+
+      // Scroll to bottom after each update
+      await nextTick(() => {
+        const scrollableDiv = document.getElementById("airesp");
+        if (scrollableDiv) {
+          scrollableDiv.scrollTop = scrollableDiv.scrollHeight;
+        }
+      });
+    }
+  } catch (error) {
+    console.error("Error:", error);
+    airesp.value += `\nError: ${error.message}`;
+  }
 }
 
 async function askAIError(msg) {
   let doc = `you are an kubernetes and devops expert. for a given kubernetes error message, you will provide most possible debugging points try to keep them as concise as possible in htlm format use <pre></pre> tag for all your respose, do not use title or heading:\n---\n${msg}`;
 
-  airesp.value = "";
+  airesp.value = ""; // Clear previous response
   dialog.value = true;
 
-  const response = await fetch(`http://192.168.1.101:11434/api/generate`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: "mistral",
-      prompt: doc,
-    }),
-  });
+  try {
+    const response = await fetch(`http://localhost:11434/api/generate`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "phi3:latest",
+        prompt: doc,
+        stream: true,
+      }),
+    });
 
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
-  }
-
-  const reader = response.body.getReader();
-
-  // Function to read data chunks
-  const readChunk = async () => {
-    const { done, value } = await reader.read();
-    if (done) {
-      console.log("stream done");
-      return;
+    if (!response.body) {
+      throw new Error("ReadableStream not supported");
     }
-    const decoder = new TextDecoder("utf-8");
-    const stringData = decoder.decode(value);
-    const respData = JSON.parse(stringData);
 
-    airesp.value += respData.response;
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
 
-    readChunk();
-    setTimeout(() => {
-      let scrollableDiv = document.getElementById("airesp");
-      var bottomElement = scrollableDiv.lastElementChild;
-      bottomElement.scrollIntoView({ behavior: "smooth", block: "end" });
-    }, 300);
-  };
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
 
-  readChunk(); // Start reading chunks
+      const chunk = decoder.decode(value);
+      const lines = chunk.split("\n").filter((line) => line.trim());
+
+      for (const line of lines) {
+        try {
+          const parsed = JSON.parse(line);
+          if (parsed.response) {
+            airesp.value += parsed.response;
+          }
+        } catch (e) {
+          console.error("Error parsing JSON:", e);
+        }
+      }
+
+      // Scroll to bottom after each update
+      await nextTick(() => {
+        const scrollableDiv = document.getElementById("airesp");
+        if (scrollableDiv) {
+          scrollableDiv.scrollTop = scrollableDiv.scrollHeight;
+        }
+      });
+    }
+  } catch (error) {
+    console.error("Error:", error);
+    airesp.value += `\nError: ${error.message}`;
+  }
+}
+
+function clearResp() {
+  airesp.value = null;
+  dialog.value = false;
 }
 
 function closeLog() {
